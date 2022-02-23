@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+import sys
+import socket
+import json
+from json import JSONDecodeError
+
+
+# Return the information of ip, port, and name from the argument
+# if any arguments are missing, use default
+def parse_argument(argv):
+    #default setting
+    ip = "127.0.0.1"
+    port = "8000"
+    name = "Glorifrir Flintshoulder"
+    
+    if len(argv) == 2:
+        ip = argv[1]
+    elif len(argv) == 3:
+        ip = argv[1]
+        port = argv[2]
+    elif len(argv) == 4:
+        ip = argv[1]
+        port = argv[2]
+        name = argv[3]
+        
+    return ip, port, name
+
+
+# Convert readline from stdin to a JSON object and return it
+# exit the program if EOF
+def input_to_json():
+    input_ = sys.stdin.readline()
+    if input_ == '':
+        sys.exit()
+
+    try:
+        input_ = json.loads(input_)
+    except JSONDecodeError:
+        sys.exit()
+            
+    return input_
+
+# Return a specific format of json string when reviving JSON that does not represent a well-formed request
+# EX. { "error" : "not a request", "object" : <JSON> }
+def ill_formed_json(input_json):
+    output = { "error" : "not a request", "object" : input_json}
+    return json.dumps(output)
+
+# Return the value for key "params" if the value for key "command" is equal to the input command_wanted
+def get_params(json_input, command_wanted):
+    params = None
+    if type(json_input) == dict:
+        if json_input.get("command") == command_wanted:
+            params = json_input.get("params")
+    return params
+
+# Return a correct format batch in bytes
+# EX. { key1 : value1, key2 : value2 }
+def formulate_batch(key1, value1, key2, value2):
+    batch = {key1 : value1, key2 : value2}
+    batch = json.dumps(batch)
+    batch = batch.encode('utf-8')
+    return batch
+
+# Return true if the input json if a valid road command
+# example of road command : 
+# { "command" : "roads",  "params" : [ {"from" : String, "to" : String }, ...] }
+def check_valid_roads_command(input_json):
+    roads = get_params(input_json,"roads")
+    if not roads:
+        return False
+
+    if type(roads) != list:
+        return False
+        
+    for road in roads:
+        if type(road) != dict:
+            return False
+        if not road.get("from") or not road.get("to"):
+            return False
+    return True
+    
+# Return true if the input json if a command
+# example of a command : 
+# { "command" : <command> , "params" : { "character" : String, "town" : String } }
+def check_valid_command(json_input, command):
+    place = get_params(json_input, command)
+    if not place:
+        return False
+
+    if type(place) != dict:
+        return False
+
+    char = place.get("character")
+    town = place.get("town")
+
+    return char and town and type(char) == str and type(town) == str
+    
+# Return the value of key character and town 
+def get_char_town(json_input):
+    param = json_input.get("params")
+    char = param.get("character")
+    town = param.get("town")
+    return char, town
+
+# Print the response to a batch request 
+# The response contains a (possibly) empty list of character placements
+# deemed invalid by the server and the Boolean response to the query.
+def print_response(response_json, char, town):
+    for inv in response_json["invalid"]:
+        invalid_name = inv["name"]
+        invalid_town = inv["town"]
+        res = ["invalid placement", { "name" : invalid_name, "town" : invalid_town } ]
+        print(json.dumps(res))
+    travel_safe = response_json["response"]
+    res = ["the response for", { "character" : char, "destination" : town} , "is", travel_safe]
+    print(json.dumps(res))
+                    
+# Handle the command passgae-safe?
+# Send batch to server, get response, and print the response in accordance with the format
+def passage_safe_command(s, json_input, characters):
+    char, town = get_char_town(json_input)
+
+    batch = formulate_batch("characters",characters,"query",{ "character" : char, "destination" : town })
+    s.sendall(batch) 
+
+    #receive [response]
+    response = s.recv(1024)
+    response_json = json.loads(response)
+
+    print_response(response_json, char, town)
+
+
+# Interact with the server according to he protocal
+def connect_server(addr, port, name):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        
+        try:
+            s.connect((addr, int(port)))
+            
+            #send [sign-up name]
+            s.sendall(name.encode('utf-8'))
+
+            #receive [session id]
+            session_id = s.recv(1024)
+
+            #renders response
+            response = ["the server will call me", name]
+            print(json.dumps(response))
+                
+            #read user input to create a road network
+            input_json = input_to_json()
+            if not check_valid_roads_command(input_json):
+                print(ill_formed_json(input_json))
+                sys.exit()
+
+            #formulate [create request]
+            towns = [v for param in input_json.get("params") for v in param.values()]
+            towns = list(set(towns)) 
+            roads = [{ "from" : param.get("from"), "to" : param.get("to") } for param in input_json.get("params")]
+            create_request = formulate_batch("towns", towns, "roads", roads)
+
+            #send [create request]
+            s.sendall(create_request) 
+
+            #Processing Phase
+            characters = []
+            
+            while True:
+                json_input = input_to_json()
+                
+                if check_valid_command(json_input, "place"):
+                    #place character requests
+                    char, town = get_char_town(json_input)
+                    characters.append({ "name" : char, "town" : town })
+
+                elif check_valid_command(json_input, "passage-safe?"):
+                    # passage-safe? query
+                    passage_safe_command(s, json_input, characters)
+                    characters = []
+                    
+                else:
+                    print(ill_formed_json(json_input))
+
+        except socket.timeout:
+            sys.exit()   
+    
+
+if __name__ == "__main__":
+    
+    ip, port, name = parse_argument(sys.argv)
+
+    connect_server(ip, port, name)
+
+    
+

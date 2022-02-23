@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+import json
+from json import JSONDecodeError
+import sys
+sys.path.insert(0, "../../src/")
+import level
+import character
+import gamestate
+import gamemanager
+import rulechecker
+sys.path.insert(0, "../../src/Player/")
+import localplayer
+
+def create_level(level_data):
+    rooms = level_data.get("rooms")
+    hallways = level_data.get("hallways")
+    objects = level_data.get("objects")
+
+    key_pos = None
+    exit_pos = None
+    for obj in objects:
+        t = obj["type"]
+        p = obj["position"]
+
+        if t == "exit":
+            exit_pos = p
+        elif t == "key":
+            key_pos = p
+    
+
+    l = {"rooms" : [], "hallways" : []}
+    for room_data in rooms:
+        origin = room_data.get("origin")
+        bounds = room_data.get("bounds")
+        layout = room_data.get("layout")
+
+        room = {}
+        room["position"] = (origin[1], origin[0])
+        room["size"] = (bounds["columns"], bounds["rows"])
+        room["walls"] = [(col, row) for row in range(bounds["rows"]) for col in range(bounds["columns"]) if layout[row][col] == 0]
+        room["doors"] = [(col, row) for row in range(bounds["rows"]) for col in range(bounds["columns"]) if layout[row][col] == 2]
+        room["objects"] = {}
+
+        if key_pos:
+            if origin[0] <= key_pos[0] < origin[0] + bounds["rows"] and origin[1] <= key_pos[1] < origin[1] + bounds["columns"]:
+                room["objects"]["key"] = (key_pos[1] - origin[1], key_pos[0] - origin[0])
+        if exit_pos:
+            if origin[0] <= exit_pos[0] < origin[0] + bounds["rows"] and origin[1] <= exit_pos[1] < origin[1] + bounds["columns"]:
+                room["objects"]["exit"] = (exit_pos[1] - origin[1], exit_pos[0] - origin[0])
+
+        l["rooms"].append(room)
+
+    for hallway_data in hallways:
+        from_ = hallway_data.get("from")
+        to = hallway_data.get("to")
+        waypoints = hallway_data.get("waypoints")
+
+        hallway = {}
+        hallway["posFrom"] = (from_[1], from_[0])
+        hallway["posTo"] = (to[1], to[0])
+        hallway["waypoints"] = [(wp[1], wp[0]) for wp in waypoints]
+
+        l["hallways"].append(hallway)
+
+    return level.Level(l)
+
+
+
+def test_manager(json_input):
+    
+
+    name_list_data = json_input[0]
+    level_data = json_input[1]
+    turn = json_input[2]
+    point_list_data = json_input[3]
+    actor_move_list_list_data = json_input[4]
+
+    game_manager = gamemanager.GameManager()
+    
+    for i in range(len(point_list_data)):
+        point_data = point_list_data[i]
+        point_data = (point_data[1], point_data[0])
+
+        if i < len(name_list_data):
+            name = name_list_data[i]
+            local_player = localplayer.LocalPlayer(name, game_manager)
+            game_manager.accept_character(name, point_data, "player", observer=local_player.observer)
+        else:
+            name = "zombie"+str(i)
+            local_player = localplayer.LocalPlayer(name, game_manager)
+            game_manager.accept_character(name, point_data, "zombie", observer=local_player.observer)
+
+    level_object = create_level(level_data)
+    game_manager.start_game(level_object)
+    
+
+    move_index = 0
+
+    #When any of the following occurs, stop and return the result.
+    #The given number of turns was performed
+    #One of the move input streams is exhausted
+    #The level is over
+    turn *= len(name_list_data)
+    while turn > 0 and len(actor_move_list_list_data[move_index]) > 0 and rulechecker.RuleChecker().check_status(game_manager.state) == 2:
+
+        name = name_list_data[move_index]
+
+        actor_move = actor_move_list_list_data[move_index].pop(0)
+        maybe_point = actor_move.get("to")
+        
+        if maybe_point != None:
+            maybe_point_tuple = (maybe_point[1], maybe_point[0])
+            result = game_manager.move_character_pos_by_name(maybe_point_tuple, name)
+        else:
+            result = game_manager.move_character_pos_by_name(None, name)
+
+        if result >= 4:
+            continue
+        
+        move_index = (move_index + 1) % len(name_list_data)
+        turn -= 1
+
+
+        
+
+    
+    new_state = json.loads(str(game_manager.state))
+    manager_trace = game_manager.manager_trace
+    return [new_state, manager_trace]
+
+
+if __name__ == "__main__":
+    json_input = sys.stdin.read()
+    try:
+        json_input = json.loads(json_input)
+    except JSONDecodeError:
+        sys.exit()
+    
+    print(json.dumps(test_manager(json_input), indent=1))

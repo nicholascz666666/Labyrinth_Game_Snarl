@@ -1,0 +1,731 @@
+sbv
+[
+ {
+  "exit-locked": false,
+  "players": [
+   {
+    "type": "player",
+    "name": "ferd",
+    "position": [
+     11,
+     10
+    ]
+   }
+  ],
+  "type": "state",
+  "adversaries": [
+   {
+    "type": "zombie",
+    "name": "zombie2",
+    "position": [
+     9,
+     10
+    ]
+   }
+  ],
+  "level": {
+   "type": "level",
+   "rooms": [
+    {
+     "type": "room",
+     "origin": [
+      2,
+      2
+     ],
+     "bounds": {
+      "rows": 5,
+      "columns": 5
+     },
+     "layout": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       0
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       2
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "room",
+     "origin": [
+      8,
+      8
+     ],
+     "bounds": {
+      "rows": 5,
+      "columns": 5
+     },
+     "layout": [
+      [
+       0,
+       0,
+       2,
+       0,
+       0
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       0
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       0
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ]
+    }
+   ],
+   "hallways": [
+    {
+     "type": "hallway",
+     "from": [
+      4,
+      6
+     ],
+     "to": [
+      8,
+      10
+     ],
+     "waypoints": [
+      [
+       4,
+       10
+      ]
+     ]
+    }
+   ],
+   "objects": [
+    {
+     "type": "exit",
+     "position": [
+      4,
+      4
+     ]
+    }
+   ]
+  }
+ },
+ [
+  [
+   "dio",
+   {
+    "type": "player-update",
+    "position": [
+     4,
+     3
+    ],
+    "actors": [],
+    "layout": [
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": [
+     {
+      "type": "exit",
+      "position": [
+       4,
+       4
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   "ferd",
+   {
+    "type": "player-update",
+    "position": [
+     11,
+     10
+    ],
+    "actors": [
+     {
+      "type": "zombie",
+      "name": "zombie2",
+      "position": [
+       9,
+       10
+      ]
+     }
+    ],
+    "layout": [
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": [
+     {
+      "type": "key",
+      "position": [
+       10,
+       10
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": null
+   },
+   "OK"
+  ],
+  [
+   "dio",
+   {
+    "type": "player-update",
+    "position": [
+     4,
+     3
+    ],
+    "actors": [],
+    "layout": [
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": [
+     {
+      "type": "exit",
+      "position": [
+       4,
+       4
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   "ferd",
+   {
+    "type": "player-update",
+    "position": [
+     11,
+     10
+    ],
+    "actors": [
+     {
+      "type": "zombie",
+      "name": "zombie2",
+      "position": [
+       9,
+       10
+      ]
+     }
+    ],
+    "layout": [
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": [
+     {
+      "type": "key",
+      "position": [
+       10,
+       10
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   "ferd",
+   {
+    "type": "move",
+    "to": [
+     10,
+     10
+    ]
+   },
+   "Key"
+  ],
+  [
+   "dio",
+   {
+    "type": "player-update",
+    "position": [
+     4,
+     3
+    ],
+    "actors": [],
+    "layout": [
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      1,
+      1,
+      1
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": [
+     {
+      "type": "exit",
+      "position": [
+       4,
+       4
+      ]
+     }
+    ]
+   }
+  ],
+  [
+   "ferd",
+   {
+    "type": "player-update",
+    "position": [
+     10,
+     10
+    ],
+    "actors": [
+     {
+      "type": "zombie",
+      "name": "zombie2",
+      "position": [
+       9,
+       10
+      ]
+     }
+    ],
+    "layout": [
+     [
+      0,
+      0,
+      2,
+      0,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": []
+   }
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": [
+     4,
+     4
+    ]
+   },
+   "Exit"
+  ],
+  [
+   "ferd",
+   {
+    "type": "player-update",
+    "position": [
+     10,
+     10
+    ],
+    "actors": [
+     {
+      "type": "zombie",
+      "name": "zombie2",
+      "position": [
+       9,
+       10
+      ]
+     }
+    ],
+    "layout": [
+     [
+      0,
+      0,
+      2,
+      0,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": []
+   }
+  ],
+  [
+   "ferd",
+   {
+    "type": "move",
+    "to": [
+     11,
+     10
+    ]
+   },
+   "OK"
+  ],
+  [
+   "ferd",
+   {
+    "type": "player-update",
+    "position": [
+     11,
+     10
+    ],
+    "actors": [
+     {
+      "type": "zombie",
+      "name": "zombie2",
+      "position": [
+       9,
+       10
+      ]
+     }
+    ],
+    "layout": [
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      1,
+      1,
+      1,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0,
+      0,
+      0
+     ]
+    ],
+    "objects": []
+   }
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": [
+     4,
+     8
+    ]
+   },
+   "Invalid"
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": [
+     4,
+     10
+    ]
+   },
+   "Invalid"
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": [
+     4,
+     12
+    ]
+   },
+   "Invalid"
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": [
+     6,
+     10
+    ]
+   },
+   "Invalid"
+  ],
+  [
+   "dio",
+   {
+    "type": "move",
+    "to": [
+     8,
+     10
+    ]
+   },
+   "Invalid"
+  ]
+ ]
+]

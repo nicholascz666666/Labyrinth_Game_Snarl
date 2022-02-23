@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+import json
+from json import JSONDecodeError
+import sys
+sys.path.insert(0, "../../src/")
+import level
+import character
+import gamestate
+import gamemanager
+
+def create_level(level_data):
+    rooms = level_data.get("rooms")
+    hallways = level_data.get("hallways")
+    objects = level_data.get("objects")
+
+    key_pos = None
+    exit_pos = None
+    for obj in objects:
+        t = obj["type"]
+        p = obj["position"]
+
+        if t == "exit":
+            exit_pos = p
+        elif t == "key":
+            key_pos = p
+    
+
+    l = {"rooms" : [], "hallways" : []}
+    for room_data in rooms:
+        origin = room_data.get("origin")
+        bounds = room_data.get("bounds")
+        layout = room_data.get("layout")
+
+        room = {}
+        room["position"] = (origin[1], origin[0])
+        room["size"] = (bounds["columns"], bounds["rows"])
+        room["walls"] = [(col, row) for row in range(bounds["rows"]) for col in range(bounds["columns"]) if layout[row][col] == 0]
+        room["doors"] = [(col, row) for row in range(bounds["rows"]) for col in range(bounds["columns"]) if layout[row][col] == 2]
+        room["objects"] = {}
+
+        if key_pos:
+            if origin[0] <= key_pos[0] < origin[0] + bounds["rows"] and origin[1] <= key_pos[1] < origin[1] + bounds["columns"]:
+                room["objects"]["key"] = (key_pos[1] - origin[1], key_pos[0] - origin[0])
+        if exit_pos:
+            if origin[0] <= exit_pos[0] < origin[0] + bounds["rows"] and origin[1] <= exit_pos[1] < origin[1] + bounds["columns"]:
+                room["objects"]["exit"] = (exit_pos[1] - origin[1], exit_pos[0] - origin[0])
+
+        l["rooms"].append(room)
+
+    for hallway_data in hallways:
+        from_ = hallway_data.get("from")
+        to = hallway_data.get("to")
+        waypoints = hallway_data.get("waypoints")
+
+        hallway = {}
+        hallway["posFrom"] = (from_[1], from_[0])
+        hallway["posTo"] = (to[1], to[0])
+        hallway["waypoints"] = [(wp[1], wp[0]) for wp in waypoints]
+
+
+        
+        l["hallways"].append(hallway)
+
+    return level.Level(l)
+
+# actor_data_list is An (actor-position-list) is a list of (actor-position)
+#An (actor-position) is the following object:
+# {
+# "type": (actor-type),
+# "name": (string),
+# "position": (point)
+# }
+def create_actor_list(actor_data_list):
+    actor_object_list = []
+    for actor_data in actor_data_list:
+        type_ = actor_data.get("type")
+        name = actor_data.get("name")
+        position = actor_data.get("position")
+        position = (position[1], position[0])
+
+        if type_ == "player":
+            actor = character.Player(position, name)
+        elif type_ == "zombie":
+            actor = character.Adversary(position, name)
+        elif type_ == "ghost":
+            actor = character.Ghost(position, name)
+        actor_object_list.append(actor)
+    return actor_object_list
+
+
+def create_state(game_state_data):
+    level_data = game_state_data.get("level")
+    players_data = game_state_data.get("players")
+    adversaries_data = game_state_data.get("adversaries")
+    exit_lock_data = game_state_data.get("exit-locked")
+
+    level_object = create_level(level_data)
+    players = create_actor_list(players_data)
+    adversaries = create_actor_list(adversaries_data)
+
+    game_state = gamestate.GameState(level_object, players, adversaries, key_found=not exit_lock_data)
+
+    return game_state
+    
+
+def test_state(json_input):
+    game_state_data = json_input[0]
+    name_data = json_input[1]
+    point_data = json_input[2]
+    point_data = (point_data[1], point_data[0])
+
+    game_state_object = create_state(game_state_data)
+
+    game_manager = gamemanager.GameManager(game_state_object)
+
+    result = game_manager.move_character_pos_by_name(point_data, name_data)
+
+    new_state = json.loads(str(game_state_object))
+    if result == 1:
+        return [ "Success", new_state]
+    if result == 2:
+        return [ "Success", "Player ", name_data, " was ejected.", new_state]
+    if result == 3:
+        return [ "Success", "Player ", name_data, " exited.", new_state]
+    if result == 4:
+        return [ "Failure", "Player ", name_data, " is not a part of the game." ]
+    if result == 5:
+        return [ "Failure", "The destination position ", json_input[2], " is invalid." ]
+
+
+
+if __name__ == "__main__":
+    json_input = sys.stdin.read()
+    try:
+        json_input = json.loads(json_input)
+    except JSONDecodeError:
+        sys.exit()
+    
+    print(json.dumps(test_state(json_input)))

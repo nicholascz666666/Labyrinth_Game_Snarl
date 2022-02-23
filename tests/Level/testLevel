@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+import json
+from json import JSONDecodeError
+import sys
+sys.path.insert(0, "../../src/")
+import level
+import character
+import gamestate
+
+def create_level(level_data):
+    rooms = level_data.get("rooms")
+    hallways = level_data.get("hallways")
+    objects = level_data.get("objects")
+    key_pos = objects[0].get("position")
+    exit_pos = objects[1].get("position")
+
+    l = {"rooms" : [], "hallways" : []}
+    for room_data in rooms:
+        origin = room_data.get("origin")
+        bounds = room_data.get("bounds")
+        layout = room_data.get("layout")
+
+        room = {}
+        room["position"] = (origin[1], origin[0])
+        room["size"] = (bounds["columns"], bounds["rows"])
+        room["walls"] = [(col, row) for row in range(bounds["rows"]) for col in range(bounds["columns"]) if layout[row][col] == 0]
+        room["doors"] = [(col, row) for row in range(bounds["rows"]) for col in range(bounds["columns"]) if layout[row][col] == 2]
+        room["objects"] = {}
+        if origin[0] <= key_pos[0] < origin[0] + bounds["rows"] and origin[1] <= key_pos[1] < origin[1] + bounds["columns"]:
+            room["objects"]["key"]= (key_pos[1] - origin[1], key_pos[0] - origin[0])
+        if origin[0] <= exit_pos[0] < origin[0] + bounds["rows"] and origin[1] <= exit_pos[1] < origin[1] + bounds["columns"]:
+            room["objects"]["exit"]= (exit_pos[1] - origin[1], exit_pos[0] - origin[0])
+
+        l["rooms"].append(room)
+
+    for hallway_data in hallways:
+        from_ = hallway_data.get("from")
+        to = hallway_data.get("to")
+        waypoints = hallway_data.get("waypoints")
+
+        hallway = {}
+        hallway["posFrom"] = (from_[1], from_[0])
+        hallway["posTo"] = (to[1], to[0])
+        hallway["waypoints"] = [(wp[1], wp[0]) for wp in waypoints]
+
+
+        
+        l["hallways"].append(hallway)
+
+    return level.Level(l)
+
+
+def test_level(json_input):
+    level_data = json_input[0]
+    point_data = json_input[1]
+
+    level_object = create_level(level_data)
+
+    point = (point_data[1], point_data[0])
+
+    traversable = level_object.traversable(point)
+    object_ = level_object.object_type(point)
+    type_ = level_object.room_or_hallway_or_void(point)
+    reachable = level_object.reachable(point)
+    reachable = [(pos[1], pos[0]) for pos in reachable]
+    result = {"traversable": traversable, "object": object_, "type": type_, "reachable": reachable}
+
+    return json.dumps(result)
+
+
+if __name__ == "__main__":
+    json_input = sys.stdin.read()
+    try:
+        json_input = json.loads(json_input)
+    except JSONDecodeError:
+        sys.exit()
+    
+    print(test_level(json_input))
